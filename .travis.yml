@@ -1,0 +1,25 @@
+sudo: false
+
+os:
+- linux
+dist: bionic
+
+branches:
+  only:
+  - master
+
+services:
+  - docker
+
+env:
+  # set environment
+  - SHA=$(git rev-parse --short HEAD) HADOLINT_VERSION=v1.17.6
+
+before_install:
+  # get hadolint
+  - curl -sL -o ${HOME}/hadolint "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-$(uname -s)-$(uname -m)"
+  - chmod +x ${HOME}/hadolint
+
+script:
+  # test hadolint
+  - find . -maxdepth 3 -type f \( -iname "Dockerfile*" \) | xargs ${HOME}/hadolint

@@ -7,9 +7,11 @@ ARG API_PORT
 ENV API_PORT=${API_PORT:-40000}
 RUN echo "API port ${API_PORT}"
 
+# DL3018
 RUN apk update && \
-    apk add postgresql && \
-    apk add netcat-openbsd
+    apk --no-cache add postgresql=12.2-r0 && \
+    apk --no-cache add netcat-openbsd=1.130-r1 && \
+    rm -rf /var/cache/apk/*
 
 COPY ./package*.json ./
 RUN npm install
@@ -33,7 +35,7 @@ CMD ["node", "index.js"]
 # psql -h ${POSTGRES_HOST} -p 5432 -U ${POSTGRES_USER} -W
 # psql -h pg-db -p 5432 -U postgres -W
 
-# SELECT * FROM postgres_table;
+# SELECT * FROM users;
 
 # -h, --host=HOSTNAME      database server host or socket directory (default: "local socket")
 # -p, --port=PORT          database server port (default: "5432")
