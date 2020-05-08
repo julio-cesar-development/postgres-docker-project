@@ -31,18 +31,22 @@ app.get('/api/v1/index/:id', async (req, res) => {
   console.info(`route /index/${id}`);
 
   if (!id || id.toString().replace(/[\d]+/g, '').length > 0) {
-    res.json({ status: 'error', message: 'invalid_params' }).status(400);
+    res.status(400).json({ status: 'error', message: 'invalid_params' });
   }
 
   try {
     const sql = 'SELECT * FROM users WHERE id = $1';
     const data = await query(pool, sql, [id]);
 
-    res.json({ status: 'success', data }).status(200);
+    if (!data || !data.length) {
+      res.status(404).json({ status: 'error', message: 'not_found' });
+    }
+
+    res.status(200).json({ status: 'success', data });
   } catch(exception) {
     console.error(exception);
 
-    res.json({ status: 'error', message: 'internal_error' }).status(500);
+    res.status(500).json({ status: 'error', message: 'internal_error' });
   }
 });
 

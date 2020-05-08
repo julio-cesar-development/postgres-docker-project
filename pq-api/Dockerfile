@@ -7,7 +7,6 @@ ARG API_PORT
 ENV API_PORT=${API_PORT:-40000}
 RUN echo "API port ${API_PORT}"
 
-# DL3018
 RUN apk update && \
     apk --no-cache add postgresql=12.2-r0 && \
     apk --no-cache add netcat-openbsd=1.130-r1 && \
