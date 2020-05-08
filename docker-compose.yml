@@ -31,6 +31,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres_db}
       POSTGRES_HOST: ${POSTGRES_HOST:-pg-db}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      FLUENTD_HOST: ${FLUENTD_HOST:-fluentd-logger}
     ports:
       - "40000:40000"
     volumes:
@@ -41,6 +42,17 @@ services:
       - pg-net
     depends_on:
       - pg-db
+
+  fluentd-logger:
+    container_name: fluentd-logger
+    restart: on-failure
+    image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
+    ports:
+      - "24224:24224"
+    volumes:
+      - ./fluentd-config/fluent.conf:/etc/fluent/fluent.conf
+    networks:
+      - pg-net
 
 networks:
   pg-net:

@@ -1,19 +1,24 @@
 {
   "name": "pq-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "simple application with Docker/ Postgres/ Fluentd/ Node JS",
   "main": "index.js",
-  "dependencies": {
-    "express": "4.17.1",
-    "pg": "8.0.3"
-  },
-  "devDependencies": {
-    "pm2": "4.2.3"
-  },
   "scripts": {
     "start": "node index.js",
     "dev": "pm2-dev index.js",
-    "test": "echo OK && exit 0"
+    "test": "echo OK && exit 0",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "fluent-logger": "3.4.1",
+    "pg": "8.0.3"
+  },
+  "devDependencies": {
+    "pm2": "4.2.3",
+    "eslint": "5.16.0",
+    "eslint-config-airbnb-base": "13.2.0",
+    "eslint-plugin-import": "2.18.2"
   },
   "keywords": [],
   "author": "",
