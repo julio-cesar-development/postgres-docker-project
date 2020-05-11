@@ -38,12 +38,12 @@ const query = (pool, sql, ...params) => new Promise((resolve, reject) => {
   });
 });
 
-app.get('/api/v1/index/:id', async (req, res) => {
+app.get('/api/v1/users/:id', async (req, res) => {
   const { id } = req.params;
-  fluentLogger('route', { identifier: 'index', params: { id } });
+  fluentLogger('route', { identifier: 'users', params: { id } });
 
   if (!id || id.toString().replace(/[\d]+/g, '').length > 0) {
-    fluentLogger('route error', { identifier: 'index', params: { id }, error: 'invalid_params' });
+    fluentLogger('route error', { identifier: 'users', params: { id }, error: 'invalid_params' });
 
     return res.status(400).json({ status: 'error', message: 'invalid_params' });
   }
@@ -53,17 +53,22 @@ app.get('/api/v1/index/:id', async (req, res) => {
     const data = await query(pqPool, sql, [id]);
 
     if (!data || !data.length) {
-      fluentLogger('route error', { identifier: 'index', params: { id }, error: 'not_found' });
+      fluentLogger('route error', { identifier: 'users', params: { id }, error: 'not_found' });
 
       return res.status(404).json({ status: 'error', message: 'not_found' });
     }
 
     return res.status(200).json({ status: 'success', data });
   } catch (error) {
-    fluentLogger('route error', { identifier: 'index', params: { id }, error });
+    fluentLogger('route error', { identifier: 'users', params: { id }, error });
 
     return res.status(500).json({ status: 'error', message: 'internal_error' });
   }
+});
+
+// TODO: improve healthcheck
+app.get('/api/v1/healthcheck', async (req, res) => {
+  return res.status(200).json({ status: 'success' });
 });
 
 app.listen(apiPort, () => console.info(`Listening on port ${apiPort}`));

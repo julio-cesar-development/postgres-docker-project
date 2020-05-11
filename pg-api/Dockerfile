@@ -52,4 +52,7 @@ CMD ["node", "index.js"]
 # list tables
 # \dt
 
+# docker image build --tag juliocesarmidia/pg-project-api:v1.0.0 --build-arg API_PORT=40000 ./pg-api
+# docker container run --rm -p 50000:40000 --name pg-project-api juliocesarmidia/pg-project-api:v1.0.0
+
 # docker container exec -it pg-api sh

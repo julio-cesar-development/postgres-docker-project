@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-data
+  namespace: blackdevs
+  labels:
+    app: pg-project
+
+data:
+  init.yaml: |
+    <source>
+      @type forward
+      port 24224
+    </source>
+
+    <match fluentd.api.**>
+      @type copy
+
+      <store>
+        @type stdout
+      </store>
+
+      <store>
+        @type file
+        path /var/log/fluent
+      </store>
+    </match>
+
+    @include /etc/fluent/config.d/*.conf

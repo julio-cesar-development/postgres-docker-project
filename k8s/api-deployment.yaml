@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+  namespace: blackdevs
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 100
+
+  selector:
+    matchLabels:
+      app: pg-project
+
+  strategy:
+    type: Recreate
+
+  template:
+    metadata:
+      # name: api-deployment
+      labels:
+        app: pg-project
+
+    spec:
+      containers:
+        - name: pg-api
+          image: juliocesarmidia/pg-project-api:latest
+
+          ports:
+            - containerPort: 40000
+              name: api-port
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_DB
+
+            - name: POSTGRES_HOST
+              value: pg-svc.blackdevs.svc.cluster.local
+              # value: pg-statefulset-0.pg-svc.blackdevs.svc.cluster.local
+              # value: pg-svc
+
+            - name: POSTGRES_PORT
+              value: "5432"
+
+            - name: FLUENTD_HOST
+              value: fluentd-svc.blackdevs.svc.cluster.local
+              # value: fluentd-svc
+
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/healthcheck
+              port: 40000
+            initialDelaySeconds: 10
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/healthcheck
+              port: 40000
+            initialDelaySeconds: 10
+            timeoutSeconds: 30
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "200m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+      restartPolicy: Always

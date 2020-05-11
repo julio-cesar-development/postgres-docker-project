@@ -1,47 +1,51 @@
 version: "3.4"
 
+x-env:
+  &default-env
+  POSTGRES_USER: ${POSTGRES_USER:-postgres}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  POSTGRES_DB: ${POSTGRES_DB:-postgres_db}
+
 services:
   pg-db:
     container_name: pg-db
     restart: on-failure
     image: postgres:9.6-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-postgres_db}
+      <<: *default-env
     ports:
       - "35432:5432"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./pg-init/init.sql:/docker-entrypoint-initdb.d/init.sql
       - pg-data:/var/lib/postgresql/data
     networks:
       - pg-net
+    hostname: pg-svc.blackdevs.svc.cluster.local
 
   pg-api:
     container_name: pg-api
     restart: on-failure
     build:
-      context: ./pq-api
+      context: ./pg-api
       dockerfile: Dockerfile
       args:
         - API_PORT=40000
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-postgres_db}
+      <<: *default-env
       POSTGRES_HOST: ${POSTGRES_HOST:-pg-db}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       FLUENTD_HOST: ${FLUENTD_HOST:-fluentd-logger}
     ports:
-      - "40000:40000"
+      - "80:40000"
     volumes:
-      - ./pq-api:/app
+      - ./pg-api:/app
       - /app/node_modules
     command: "sh -c 'npm install && npm run dev'"
     networks:
       - pg-net
     depends_on:
       - pg-db
+    hostname: api-svc.blackdevs.svc.cluster.local
 
   fluentd-logger:
     container_name: fluentd-logger
@@ -53,6 +57,7 @@ services:
       - ./fluentd-config/fluent.conf:/etc/fluent/fluent.conf
     networks:
       - pg-net
+    hostname: fluentd-svc.blackdevs.svc.cluster.local
 
 networks:
   pg-net:

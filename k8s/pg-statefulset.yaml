@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pg-statefulset
+  namespace: blackdevs
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 100
+
+  serviceName: pg-svc
+
+  selector:
+    matchLabels:
+      app: pg-project
+
+  template:
+    metadata:
+      # name: pg-statefulset
+      labels:
+        app: pg-project
+
+    spec:
+      containers:
+        - name: pg-db
+          image: postgres:9.6-alpine
+
+          ports:
+            - containerPort: 5432
+              name: pg-port
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_DB
+
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+          volumeMounts:
+            - name: init-volume
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.yaml
+
+            - name: data-volume
+              mountPath: /var/lib/postgresql/data
+
+            # - name: pg-persistent-storage
+            #   mountPath: /var/lib/postgresql/data
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "200m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+      restartPolicy: Always
+
+      volumes:
+        - name: init-volume
+          configMap:
+            name: pg-data
+
+        - name: data-volume
+          emptyDir: {}
+
+        # - name: pg-persistent-storage
+        #   persistentVolumeClaim:
+        #     claimName: pg-pv-claim

@@ -1,5 +1,4 @@
 sudo: false
-
 os:
 - linux
 dist: bionic
@@ -23,3 +22,14 @@ before_install:
 script:
   # test hadolint
   - find . -maxdepth 3 -type f \( -iname "Dockerfile*" \) | xargs ${HOME}/hadolint
+
+  # build API image
+  - docker image build --tag juliocesarmidia/pg-project-api:$SHA --tag juliocesarmidia/pg-project-api:latest --build-arg API_PORT=40000 ./pg-api
+
+after_success:
+  # log in docker hub
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  # push image
+  - docker image push juliocesarmidia/pg-project-api:$SHA
+  - docker image push juliocesarmidia/pg-project-api:latest
