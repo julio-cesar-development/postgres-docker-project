@@ -50,16 +50,15 @@ spec:
                   key: POSTGRES_DB
 
             - name: POSTGRES_HOST
-              value: pg-svc.blackdevs.svc.cluster.local
-              # value: pg-statefulset-0.pg-svc.blackdevs.svc.cluster.local
-              # value: pg-svc
+              value: pg-svc
+              # value: pg-svc.blackdevs.svc.cluster.local
 
             - name: POSTGRES_PORT
               value: "5432"
 
             - name: FLUENTD_HOST
-              value: fluentd-svc.blackdevs.svc.cluster.local
-              # value: fluentd-svc
+              value: fluentd-svc
+              # value: fluentd-svc.blackdevs.svc.cluster.local
 
             - name: HOST_IP
               valueFrom:
@@ -69,22 +68,23 @@ spec:
           livenessProbe:
             httpGet:
               path: /api/v1/healthcheck
-              port: 40000
+              port: api-port
             initialDelaySeconds: 10
             timeoutSeconds: 30
+
           readinessProbe:
             httpGet:
               path: /api/v1/healthcheck
-              port: 40000
+              port: api-port
             initialDelaySeconds: 10
             timeoutSeconds: 30
 
           resources:
             requests:
               memory: "128Mi"
-              cpu: "200m"
+              cpu: "256m"
             limits:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "128Mi"
+              cpu: "256m"
 
       restartPolicy: Always

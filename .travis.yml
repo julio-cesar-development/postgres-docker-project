@@ -1,6 +1,8 @@
 sudo: false
+
 os:
 - linux
+
 dist: bionic
 
 branches:
@@ -12,24 +14,27 @@ services:
 
 env:
   # set environment
-  - SHA=$(git rev-parse --short HEAD) HADOLINT_VERSION=v1.17.6
+  - SHA=$(git rev-parse --short HEAD) HADOLINT_VERSION=v1.17.6 SHELLSHECK_VERSION=v0.4.7
 
 before_install:
   # get hadolint
   - curl -sL -o ${HOME}/hadolint "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-$(uname -s)-$(uname -m)"
   - chmod +x ${HOME}/hadolint
+    # get shellcheck
+  - wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${SHELLSHECK_VERSION}/shellcheck-${SHELLSHECK_VERSION}.linux.x86_64.tar.xz" | tar -xJv
+  - chmod +x shellcheck-${SHELLSHECK_VERSION}/shellcheck && mv shellcheck-${SHELLSHECK_VERSION}/shellcheck ${HOME}/shellcheck
 
 script:
   # test hadolint
-  - find . -maxdepth 3 -type f \( -iname "Dockerfile*" \) | xargs ${HOME}/hadolint
-
+  - find . -maxdepth 3 -type f -iname "Dockerfile*" | xargs ${HOME}/hadolint
+  # test shellcheck
+  - find . -maxdepth 3 -type f -iname "*.sh" | xargs ${HOME}/shellcheck
   # build API image
   - docker image build --tag juliocesarmidia/pg-project-api:$SHA --tag juliocesarmidia/pg-project-api:latest --build-arg API_PORT=40000 ./pg-api
 
 after_success:
   # log in docker hub
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-
   # push image
   - docker image push juliocesarmidia/pg-project-api:$SHA
   - docker image push juliocesarmidia/pg-project-api:latest

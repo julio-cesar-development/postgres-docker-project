@@ -36,7 +36,7 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       FLUENTD_HOST: ${FLUENTD_HOST:-fluentd-logger}
     ports:
-      - "80:40000"
+      - "41000:40000"
     volumes:
       - ./pg-api:/app
       - /app/node_modules

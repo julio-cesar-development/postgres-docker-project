@@ -68,6 +68,8 @@ app.get('/api/v1/users/:id', async (req, res) => {
 
 // TODO: improve healthcheck
 app.get('/api/v1/healthcheck', async (req, res) => {
+  fluentLogger('route', { identifier: 'healthcheck', params: {} });
+
   return res.status(200).json({ status: 'success' });
 });
 
