@@ -26,7 +26,7 @@ before_install:
 
 script:
   # test hadolint
-  - find . -maxdepth 3 -type f -iname "Dockerfile*" | xargs ${HOME}/hadolint
+  - find . -maxdepth 3 -type f -iname "*Dockerfile" | xargs ${HOME}/hadolint
   # test shellcheck
   - find . -maxdepth 3 -type f -iname "*.sh" | xargs ${HOME}/shellcheck
   # build API image
