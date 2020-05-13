@@ -16,8 +16,8 @@ services:
     ports:
       - "35432:5432"
     volumes:
-      - ./pg-init/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - pg-data:/var/lib/postgresql/data
+      - ./pg-init/init.sql:/docker-entrypoint-initdb.d/init.sql:rw
+      - pg-data:/var/lib/postgresql/data:rw
     networks:
       pg_project_network:
         ipv4_address: 172.100.10.2
@@ -43,7 +43,7 @@ services:
     ports:
       - "41000:40000"
     volumes:
-      - ./pg-api:/app
+      - ./pg-api:/app:rw
       - /app/node_modules
     command: "sh -c 'npm install && npm run dev'"
     depends_on:
@@ -64,7 +64,7 @@ services:
     ports:
       - "24224:24224"
     volumes:
-      - ./fluentd-config/fluent.conf:/etc/fluent/fluent.conf
+      - ./fluentd-config/fluent.conf:/etc/fluent/fluent.conf:rw
     networks:
       pg_project_network:
         ipv4_address: 172.100.10.4

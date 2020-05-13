@@ -18,7 +18,7 @@ docker-compose up
 > Run the project with Kubernetes
 
 ```bash
-kubectl apply -f ./k8s/
+./deploy.sh dev
 
 kubectl config set-context ${CURRENT_CONTEXT} --namespace=blackdevs
 kubectl get pod,deploy,statefulset,svc,ingress,configmap
