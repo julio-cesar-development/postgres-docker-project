@@ -10,6 +10,7 @@ RUN echo "API port ${API_PORT}"
 RUN apk update && \
     apk --no-cache add postgresql=12.2-r0 && \
     apk --no-cache add netcat-openbsd=1.130-r1 && \
+    apk --no-cache add fping=4.2-r0 && \
     rm -rf /var/cache/apk/*
 
 COPY ./package*.json ./
@@ -52,7 +53,21 @@ CMD ["node", "index.js"]
 # list tables
 # \dt
 
-# docker image build --tag juliocesarmidia/pg-project-api:v1.0.0 --build-arg API_PORT=40000 ./pg-api
-# docker container run --rm -p 50000:40000 --name pg-project-api juliocesarmidia/pg-project-api:v1.0.0
+# docker image build --tag juliocesarmidia/pg-project-api:latest --build-arg API_PORT=40000 ./pg-api
+# docker container run --rm -p 41000:40000 --name pg-project-api juliocesarmidia/pg-project-api:latest
 
 # docker container exec -it pg-api sh
+
+### tests with fping tools ###
+# > dnsdomainname
+# blackdevs.svc.cluster.local
+
+# > domainname
+# blackdevs.svc.cluster.local
+
+# > hostname
+# api-svc
+
+# > nslookup pg-svc.blackdevs.svc.cluster.local
+# Name:	pg-svc.blackdevs.svc.cluster.local
+# Address: 172.100.10.2

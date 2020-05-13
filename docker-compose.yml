@@ -19,8 +19,13 @@ services:
       - ./pg-init/init.sql:/docker-entrypoint-initdb.d/init.sql
       - pg-data:/var/lib/postgresql/data
     networks:
-      - pg-net
-    hostname: pg-svc.blackdevs.svc.cluster.local
+      pg_project_network:
+        ipv4_address: 172.100.10.2
+        aliases:
+          - pg-svc
+          - pg-svc.blackdevs.svc.cluster.local
+    domainname: blackdevs.svc.cluster.local
+    hostname: pg-svc
 
   pg-api:
     container_name: pg-api
@@ -41,11 +46,16 @@ services:
       - ./pg-api:/app
       - /app/node_modules
     command: "sh -c 'npm install && npm run dev'"
-    networks:
-      - pg-net
     depends_on:
       - pg-db
-    hostname: api-svc.blackdevs.svc.cluster.local
+    networks:
+      pg_project_network:
+        ipv4_address: 172.100.10.3
+        aliases:
+          - api-svc
+          - api-svc.blackdevs.svc.cluster.local
+    domainname: blackdevs.svc.cluster.local
+    hostname: api-svc
 
   fluentd-logger:
     container_name: fluentd-logger
@@ -56,12 +66,23 @@ services:
     volumes:
       - ./fluentd-config/fluent.conf:/etc/fluent/fluent.conf
     networks:
-      - pg-net
-    hostname: fluentd-svc.blackdevs.svc.cluster.local
+      pg_project_network:
+        ipv4_address: 172.100.10.4
+        aliases:
+          - fluentd-svc
+          - fluentd-svc.blackdevs.svc.cluster.local
+    domainname: blackdevs.svc.cluster.local
+    hostname: fluentd-svc
 
 networks:
-  pg-net:
+  pg_project_network:
     driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.100.10.0/24
 
 volumes:
   pg-data:

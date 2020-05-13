@@ -16,7 +16,7 @@ spec:
 
   template:
     metadata:
-      # name: pg-statefulset
+      name: pg-statefulset
       labels:
         app: pg-project
 

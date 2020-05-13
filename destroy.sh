@@ -1,6 +1,7 @@
 #!/bin/bash
 
-kubectl delete -f ./k8s/pg-data.yaml \
+kubectl delete \
+  -f ./k8s/pg-data.yaml \
   -f ./k8s/pg-svc.yaml \
   -f ./k8s/pg-statefulset.yaml \
   -f ./k8s/fluentd-data.yaml \
