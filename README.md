@@ -21,6 +21,7 @@ docker-compose up
 ```bash
 ./deploy.sh dev
 
+CURRENT_CONTEXT=$(kubectl config view | grep "current-context" | cut -d ":" -f2 | tr -d ' ')
 kubectl config set-context ${CURRENT_CONTEXT} --namespace=blackdevs
 kubectl get pod,deploy,statefulset,svc,ingress,configmap
 ```

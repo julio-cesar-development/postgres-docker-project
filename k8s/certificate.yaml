@@ -1,0 +1,11 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: selfsigned-cert
+  namespace: blackdevs
+spec:
+  dnsNames:
+    - pg-project.blackdevs.com.br
+  secretName: tls-secret
+  issuerRef:
+    name: issuer-selfsigned
