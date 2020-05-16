@@ -4,3 +4,4 @@ data/*
 *.crt
 *.key
 key*
+dist/

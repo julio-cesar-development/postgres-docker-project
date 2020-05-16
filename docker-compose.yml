@@ -35,6 +35,8 @@ services:
       dockerfile: Dockerfile
       args:
         - API_PORT=40000
+    entrypoint: ["/app/docker-entrypoint.sh"]
+    command: "sh -c 'yarn install && yarn run dev'"
     environment:
       <<: *default-env
       POSTGRES_HOST: ${POSTGRES_HOST:-pg-db}
@@ -45,7 +47,6 @@ services:
     volumes:
       - ./pg-api:/app:rw
       - /app/node_modules
-    command: "sh -c 'npm install && npm run dev'"
     depends_on:
       - pg-db
     networks:

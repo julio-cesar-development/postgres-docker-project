@@ -31,6 +31,8 @@ script:
   - find . -maxdepth 3 -type f -iname "*.sh" | xargs ${HOME}/shellcheck
   # build API image
   - docker image build --tag juliocesarmidia/pg-project-api:$SHA --tag juliocesarmidia/pg-project-api:latest --build-arg API_PORT=40000 ./pg-api
+  # run linter for API
+  - docker container run -it --entrypoint "" juliocesarmidia/pg-project-api:latest yarn run lint
 
 after_success:
   # log in docker hub

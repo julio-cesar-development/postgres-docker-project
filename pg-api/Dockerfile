@@ -13,13 +13,16 @@ RUN apk update && \
     apk --no-cache add fping=4.2-r0 && \
     rm -rf /var/cache/apk/*
 
-COPY ./package*.json ./
-RUN npm install
-COPY . .
+COPY ./package.json ./yarn.lock ./
+RUN yarn install
+COPY . /app
+RUN yarn run build
+
+RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE $API_PORT
 
-CMD ["node", "index.js"]
+CMD ["yarn", "start"]
 
 # apk update
 # apk add postgresql

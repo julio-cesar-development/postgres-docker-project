@@ -1,0 +1,19 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "quotes": ["error", "single"],
+    "no-console": ["error"],
+    "@typescript-eslint/semi": ["error"],
+    "@typescript-eslint/quotes": ["off"],
+    "@typescript-eslint/prefer-method-signature": ["off"],
+    "@typescript-eslint/strict-export-declare-modifiers": ["off"],
+    "@typescript-eslint/no-explicit-any": ["off"]
+  }
+}
