@@ -49,6 +49,32 @@ const query = (opts: QueryOpts): Promise<any> => new Promise((resolve, reject) =
   }
 });
 
+app.get('/api/v1/users', async (req, res) => {
+  fluentLogger('route', { identifier: 'users', params: {} });
+
+  try {
+    const sql = 'SELECT * FROM users';
+    let data: Array<any>;
+
+    try {
+      data = await query({ pool: pqPool, sql });
+    } catch (exception0) {
+      fluentLogger('route error', { identifier: 'users', params: {}, error: exception0 });
+      return res.status(500).json({ status: 'error', message: 'internal_error' });
+    }
+
+    if (!data || !data.length) {
+      fluentLogger('route error', { identifier: 'users', params: {}, error: 'not_found' });
+      return res.status(404).json({ status: 'error', message: 'not_found' });
+    }
+
+    return res.status(200).json({ status: 'success', data });
+  } catch (exception1) {
+    fluentLogger('route error', { identifier: 'users', params: {}, error: exception1 });
+    return res.status(500).json({ status: 'error', message: 'internal_error' });
+  }
+});
+
 app.get('/api/v1/users/:id', async (req, res) => {
   const { id } = req.params;
   fluentLogger('route', { identifier: 'users', params: { id } });

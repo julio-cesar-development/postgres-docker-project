@@ -13,11 +13,9 @@ RUN apk update && \
     apk --no-cache add fping=4.2-r0 && \
     rm -rf /var/cache/apk/*
 
-COPY ./package.json ./yarn.lock ./
+COPY ./package.json ./yarn.lock /app/
 RUN yarn install
-COPY . /app
-RUN yarn run build
-
+COPY ./ /app
 RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE $API_PORT
@@ -58,6 +56,7 @@ CMD ["yarn", "start"]
 
 # docker image build --tag juliocesarmidia/pg-project-api:latest --build-arg API_PORT=40000 ./pg-api
 # docker container run --rm -p 41000:40000 --name pg-project-api juliocesarmidia/pg-project-api:latest
+# docker container run -it --entrypoint "" juliocesarmidia/pg-project-api:latest yarn run lint
 
 # docker container exec -it pg-api sh
 
