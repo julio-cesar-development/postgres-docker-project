@@ -1,5 +1,5 @@
 FROM node:14-alpine
-LABEL AUTHOR="Julio Cesar <julio.scheidt@leads2b.com>"
+LABEL maintainer="Julio Cesar <julio@blackdevs.com.br>"
 
 WORKDIR /app
 
