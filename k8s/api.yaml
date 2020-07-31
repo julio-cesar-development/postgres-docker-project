@@ -13,7 +13,10 @@ spec:
       app: pg-project
 
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 3
 
   template:
     metadata:
@@ -25,6 +28,11 @@ spec:
       containers:
         - name: pg-api
           image: juliocesarmidia/pg-project-api:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - "sh"
+            - "-c"
+            - "yarn install && yarn build && yarn start"
 
           ports:
             - containerPort: 40000
@@ -50,15 +58,13 @@ spec:
                   key: POSTGRES_DB
 
             - name: POSTGRES_HOST
-              value: pg-svc
-              # value: pg-svc.blackdevs.svc.cluster.local
+              value: pg-svc.blackdevs
 
             - name: POSTGRES_PORT
               value: "5432"
 
             - name: FLUENTD_HOST
-              value: fluentd-svc
-              # value: fluentd-svc.blackdevs.svc.cluster.local
+              value: fluentd-svc.blackdevs
 
             - name: HOST_IP
               valueFrom:
@@ -88,3 +94,46 @@ spec:
               cpu: "256m"
 
       restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-svc
+  namespace: blackdevs
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: pg-project
+
+  ports:
+    - port: 80
+      targetPort: api-port
+      protocol: TCP
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: api-ingress
+  namespace: blackdevs
+
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/rewrite-target: /
+    traefik.ingress.kubernetes.io/load-balancer-method: "wrr"
+    # drr Deficit Round Robin
+    # wrr Weighted round robin
+
+spec:
+  rules:
+  - http:
+      paths:
+        - path: /
+          backend:
+            serviceName: api-svc
+            servicePort: 80
