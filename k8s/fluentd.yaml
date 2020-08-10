@@ -3,8 +3,6 @@ kind: ConfigMap
 metadata:
   name: fluentd-data
   namespace: blackdevs
-  labels:
-    app: pg-project
 
 data:
   init.yaml: |
@@ -42,7 +40,7 @@ spec:
 
   selector:
     matchLabels:
-      app: pg-project
+      app: pg-project-fluentd
 
   strategy:
     type: RollingUpdate
@@ -54,7 +52,7 @@ spec:
     metadata:
       name: fluentd-deployment
       labels:
-        app: pg-project
+        app: pg-project-fluentd
 
     spec:
       containers:
@@ -113,7 +111,7 @@ spec:
   type: ClusterIP
 
   selector:
-    app: pg-project
+    app: pg-project-fluentd
 
   ports:
     - port: 24224

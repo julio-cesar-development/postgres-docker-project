@@ -10,7 +10,7 @@ spec:
 
   selector:
     matchLabels:
-      app: pg-project
+      app: pg-project-api
 
   strategy:
     type: RollingUpdate
@@ -22,12 +22,12 @@ spec:
     metadata:
       name: api-deployment
       labels:
-        app: pg-project
+        app: pg-project-api
 
     spec:
       containers:
         - name: pg-api
-          image: juliocesarmidia/pg-project-api:latest
+          image: juliocesarmidia/pg-project-api:9d6b9ed
           imagePullPolicy: IfNotPresent
           command:
             - "sh"
@@ -107,7 +107,7 @@ spec:
   type: ClusterIP
 
   selector:
-    app: pg-project
+    app: pg-project-api
 
   ports:
     - port: 80

@@ -3,8 +3,6 @@ kind: ConfigMap
 metadata:
   name: pg-data
   namespace: blackdevs
-  labels:
-    app: pg-project
 
 data:
   init.yaml: |
@@ -46,13 +44,13 @@ spec:
 
   selector:
     matchLabels:
-      app: pg-project
+      app: pg-project-postgres
 
   template:
     metadata:
       name: pg-statefulset
       labels:
-        app: pg-project
+        app: pg-project-postgres
 
     spec:
       containers:
@@ -133,7 +131,7 @@ spec:
   type: ClusterIP
 
   selector:
-    app: pg-project
+    app: pg-project-postgres
 
   ports:
     - port: 5432

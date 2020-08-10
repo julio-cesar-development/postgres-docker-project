@@ -2,7 +2,7 @@
 
 set -e
 
-kubectl config set-context $(kubectl config current-context) --namespace=blackdevs
+kubectl config set-context "$(kubectl config current-context)" --namespace=blackdevs
 
 
 # FQDN="pg-project.blackdevs.com.br"
@@ -51,3 +51,15 @@ kubectl apply -f ./k8s/certificate.yaml
 
 # test the certificate
 # wget --save-headers -O- "https://$FQDN/api/v1/healthcheck" --no-check-certificate
+
+helm template ./ci/postgres-project/ --debug
+
+helm install ./ci/postgres-project/ --generate-name
+
+helm ls
+
+helm uninstall postgres-project-1597041126
+
+helm repo update
+
+helm upgrade postgres-project-1597041126 --set api.image.tag=latest ./ci/postgres-project/

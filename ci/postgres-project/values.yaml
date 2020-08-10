@@ -1,0 +1,89 @@
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "postgres-project"
+
+api:
+  replicaCount: 1
+  image:
+    repository: juliocesarmidia/pg-project-api
+    pullPolicy: IfNotPresent
+    tag: 9d6b9ed
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: api-port
+    protocol: TCP
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "256m"
+    limits:
+      memory: "128Mi"
+      cpu: "256m"
+
+postgres:
+  replicaCount: 1
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    tag: 9.6-alpine
+  service:
+    type: ClusterIP
+    port: 5432
+    targetPort: postgres-port
+    protocol: TCP
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "256m"
+    limits:
+      memory: "128Mi"
+      cpu: "256m"
+
+fluentd:
+  replicaCount: 1
+  image:
+    repository: quay.io/fluentd_elasticsearch/fluentd
+    pullPolicy: IfNotPresent
+    tag: v2.5.2
+  service:
+    type: ClusterIP
+    port: 24224
+    targetPort: fluentd-port
+    protocol: TCP
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "256m"
+    limits:
+      memory: "128Mi"
+      cpu: "256m"
+
+ingress:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/rewrite-target: /
+    traefik.ingress.kubernetes.io/load-balancer-method: "wrr"
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

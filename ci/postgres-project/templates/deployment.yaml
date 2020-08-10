@@ -1,0 +1,245 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "postgres-project.fullname" . }}-api
+  labels:
+    {{- include "postgres-project.labels" . | nindent 4 }}
+
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.api.replicaCount }}
+{{- end }}
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-api
+      app.kubernetes.io/instance: {{ include "postgres-project.fullname" . }}-api
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-api
+        app.kubernetes.io/instance: {{ include "postgres-project.fullname" . }}-api
+
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: {{ .Chart.Name }}-api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          command:
+            - "sh"
+            - "-c"
+            - "yarn install && yarn build && yarn start"
+
+          ports:
+            - name: api-port
+              containerPort: 40000
+              protocol: TCP
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_DB
+
+            - name: POSTGRES_HOST
+              value: {{ include "postgres-project.fullname" . }}-postgres
+
+            - name: POSTGRES_PORT
+              value: "5432"
+
+            - name: FLUENTD_HOST
+              value: {{ include "postgres-project.fullname" . }}-fluentd
+
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/healthcheck
+              port: api-port
+            initialDelaySeconds: 10
+            timeoutSeconds: 30
+
+          # readinessProbe:
+          #   httpGet:
+          #     path: /api/v1/healthcheck
+          #     port: api-port
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 30
+
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+
+      restartPolicy: Always
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: {{ include "postgres-project.fullname" . }}-postgres
+  labels:
+    {{- include "postgres-project.labels" . | nindent 4 }}
+
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.postgres.replicaCount }}
+{{- end }}
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-postgres
+      app.kubernetes.io/instance: {{ include "postgres-project.fullname" . }}-postgres
+
+  serviceName: postgres
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-postgres
+        app.kubernetes.io/instance: {{ include "postgres-project.fullname" . }}-postgres
+
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-postgres
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+
+          ports:
+            - containerPort: 5432
+              name: postgres-port
+              protocol: TCP
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: env-secrets
+                  key: POSTGRES_DB
+
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+          volumeMounts:
+            - name: init-volume
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.yaml
+
+            - name: data-volume
+              mountPath: /var/lib/postgresql/data
+
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+
+      restartPolicy: Always
+
+      volumes:
+        - name: init-volume
+          configMap:
+            name: postgres-data
+
+        - name: data-volume
+          emptyDir: {}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "postgres-project.fullname" . }}-fluentd
+  labels:
+    {{- include "postgres-project.labels" . | nindent 4 }}
+
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.fluentd.replicaCount }}
+{{- end }}
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-fluentd
+      app.kubernetes.io/instance: {{ include "postgres-project.fullname" . }}-fluentd
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-fluentd
+        app.kubernetes.io/instance: {{ include "postgres-project.fullname" . }}-fluentd
+
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-fluentd
+          image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.fluentd.image.pullPolicy }}
+
+          ports:
+            - containerPort: 24224
+              name: fluentd-port
+
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+
+            - name: init-volume
+              mountPath: /etc/fluent/fluent.conf
+              subPath: init.yaml
+
+          resources:
+            {{- toYaml .Values.fluentd.resources | nindent 12 }}
+
+      restartPolicy: Always
+
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+
+        - name: init-volume
+          configMap:
+            name: fluentd-data

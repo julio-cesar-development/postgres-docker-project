@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ include "postgres-project.fullname" . }}-api
+  labels:
+    {{- include "postgres-project.labels" . | nindent 4 }}
+
+spec:
+  type: {{ .Values.api.service.type }}
+
+  ports:
+    - port: {{ .Values.api.service.port }}
+      targetPort: {{ .Values.api.service.targetPort }}
+      protocol: {{ .Values.api.service.protocol }}
+
+  selector:
+    app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-api
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ include "postgres-project.fullname" . }}-postgres
+  labels:
+    {{- include "postgres-project.labels" . | nindent 4 }}
+
+spec:
+  type: {{ .Values.postgres.service.type }}
+
+  ports:
+    - port: {{ .Values.postgres.service.port }}
+      targetPort: {{ .Values.postgres.service.targetPort }}
+      protocol: {{ .Values.postgres.service.protocol }}
+
+  selector:
+    app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-postgres
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ include "postgres-project.fullname" . }}-fluentd
+  labels:
+    {{- include "postgres-project.labels" . | nindent 4 }}
+
+spec:
+  type: {{ .Values.fluentd.service.type }}
+
+  ports:
+    - port: {{ .Values.fluentd.service.port }}
+      targetPort: {{ .Values.fluentd.service.targetPort }}
+      protocol: {{ .Values.fluentd.service.protocol }}
+
+  selector:
+    app.kubernetes.io/name: {{ include "postgres-project.fullname" . }}-fluentd

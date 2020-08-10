@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+
+metadata:
+  name: {{ include "postgres-project.fullname" . }}
+
+  labels:
+    {{- include "postgres-project.labels" . | nindent 4 }}
+
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+spec:
+  rules:
+  - http:
+      paths:
+        - path: /
+          backend:
+            serviceName: {{ include "postgres-project.fullname" . }}-api
+            servicePort: 80
