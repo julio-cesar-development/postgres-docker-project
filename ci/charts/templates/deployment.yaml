@@ -56,10 +56,7 @@ spec:
                   key: POSTGRES_PASSWORD
 
             - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: env-secrets
-                  key: POSTGRES_DB
+              value: "postgres_db"
 
             - name: POSTGRES_HOST
               value: {{ include "postgres-project.fullname" . }}-postgres
@@ -70,10 +67,11 @@ spec:
             - name: FLUENTD_HOST
               value: {{ include "postgres-project.fullname" . }}-fluentd
 
-            - name: HOST_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+            - name: FLUENTD_PORT
+              value: "24224"
+
+            - name: API_VERSION
+              value: "production"
 
           livenessProbe:
             httpGet:
@@ -147,15 +145,7 @@ spec:
                   key: POSTGRES_PASSWORD
 
             - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: env-secrets
-                  key: POSTGRES_DB
-
-            - name: HOST_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+              value: "postgres_db"
 
           volumeMounts:
             - name: init-volume

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fluentd-data
-  namespace: blackdevs
+  namespace: default
 
 data:
   init.yaml: |
@@ -32,25 +32,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fluentd-deployment
-  namespace: blackdevs
+  namespace: default
 
 spec:
   replicas: 1
-  revisionHistoryLimit: 100
 
   selector:
     matchLabels:
       app: pg-project-fluentd
 
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 3
-
   template:
     metadata:
-      name: fluentd-deployment
       labels:
         app: pg-project-fluentd
 
@@ -104,8 +96,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: fluentd-svc
-  namespace: blackdevs
+  name: fluentd
+  namespace: default
 
 spec:
   type: ClusterIP

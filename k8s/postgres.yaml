@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pg-data
-  namespace: blackdevs
+  namespace: default
 
 data:
   init.yaml: |
@@ -34,13 +34,12 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: pg-statefulset
-  namespace: blackdevs
+  namespace: default
 
 spec:
   replicas: 1
-  revisionHistoryLimit: 100
 
-  serviceName: pg-svc
+  serviceName: postgres
 
   selector:
     matchLabels:
@@ -48,13 +47,12 @@ spec:
 
   template:
     metadata:
-      name: pg-statefulset
       labels:
         app: pg-project-postgres
 
     spec:
       containers:
-        - name: pg-db
+        - name: postgres
           image: postgres:9.6-alpine
           imagePullPolicy: IfNotPresent
 
@@ -76,15 +74,7 @@ spec:
                   key: POSTGRES_PASSWORD
 
             - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: env-secrets
-                  key: POSTGRES_DB
-
-            - name: HOST_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+              value: "postgres_db"
 
           volumeMounts:
             - name: init-volume
@@ -124,8 +114,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: pg-svc
-  namespace: blackdevs
+  name: postgres
+  namespace: default
 
 spec:
   type: ClusterIP
