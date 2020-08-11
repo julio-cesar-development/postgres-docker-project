@@ -15,7 +15,7 @@ services:
 
 env:
   # set environment
-  - SHA=$(git rev-parse --short=7 HEAD) HADOLINT_VERSION=v1.17.6 SHELLSHECK_VERSION=v0.4.7 REPO_NAME="postgres-docker-project"
+  - SHA=$(git rev-parse --short=7 HEAD) FULL_SHA=$(git rev-parse HEAD) HADOLINT_VERSION=v1.17.6 SHELLSHECK_VERSION=v0.4.7 REPO_NAME="postgres-docker-project"
 
 before_install:
   - |
@@ -39,7 +39,7 @@ script:
     docker image build \
       --tag juliocesarmidia/pg-project-api:$SHA \
       --tag juliocesarmidia/pg-project-api:latest \
-      --build-arg API_PORT=40000 ./pg-api
+      ./api
 
     # run linter for API
     docker container run -it --entrypoint "" juliocesarmidia/pg-project-api:latest yarn run lint

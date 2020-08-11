@@ -2,6 +2,60 @@
 
 set -e
 
+
+# apk update
+# apk add postgresql
+# apk add netcat-openbsd
+# apk list
+
+# network troubleshooting
+# nc -vvv postgres 5432
+# ping postgres
+
+# sudo - postgres
+
+# psql -h ${POSTGRES_HOST} -p 5432 -U ${POSTGRES_USER} -W
+# psql -h postgres -p 5432 -U postgres -W
+
+# SELECT * FROM users;
+
+# -h, --host=HOSTNAME      database server host or socket directory (default: "local socket")
+# -p, --port=PORT          database server port (default: "5432")
+# -U, --username=USERNAME  database user name (default: "postgres")
+# -w, --no-password        never prompt for password
+# -W, --password           force password prompt (should happen automatically)
+
+# list databases
+# \l
+
+# connect to a database
+# \c ${POSTGRES_DB}
+# \c postgres_db
+
+# list tables
+# \dt
+
+# docker image build --tag juliocesarmidia/pg-project-api:latest ./api
+# docker container run --rm -p 41000:40000 --name pg-project-api juliocesarmidia/pg-project-api:latest
+# docker container run -it --entrypoint "" juliocesarmidia/pg-project-api:latest yarn run lint
+
+# docker container exec -it juliocesarmidia/pg-project-api:latest sh
+
+### tests with fping tools ###
+# > dnsdomainname
+# blackdevs.svc.cluster.local
+
+# > domainname
+# blackdevs.svc.cluster.local
+
+# > hostname
+# api-svc
+
+# > nslookup pg-svc.blackdevs.svc.cluster.local
+# Name:	pg-svc.blackdevs.svc.cluster.local
+# Address: 172.100.10.2
+
+
 kubectl config set-context "$(kubectl config current-context)" --namespace=blackdevs
 
 
@@ -49,17 +103,39 @@ kubectl apply -f ./k8s/certificate.yaml
 # kubectl get certificaterequest -A
 # kubectl describe certificaterequest -A
 
+
 # test the certificate
 # wget --save-headers -O- "https://$FQDN/api/v1/healthcheck" --no-check-certificate
 
-helm template ./ci/postgres-project/ --debug
 
-helm install ./ci/postgres-project/ --generate-name
+# generate template
+helm template ./ci/charts/ --debug
 
+# install a chart
+helm install ./ci/charts/ --generate-name
+
+# uninstall a chart
+helm uninstall postgres-project-0000000000
+
+# upgrade a chart
+helm upgrade postgres-project-0000000000 \
+  --set api.image.tag=latest \
+  ./ci/charts/
+
+
+# list releases
 helm ls
 
-helm uninstall postgres-project-1597041126
-
+# update repositories
 helm repo update
 
-helm upgrade postgres-project-1597041126 --set api.image.tag=latest ./ci/postgres-project/
+
+# format terraform (check only)
+terraform fmt -check=true -write=false -diff -recursive
+# format terraform
+terraform fmt -recursive
+
+terraform show
+terraform refresh
+
+terraform destroy -auto-approve

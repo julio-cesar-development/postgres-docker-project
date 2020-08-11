@@ -6,12 +6,10 @@ const app = express();
 
 logger.configure('fluentd.api', {
   host: String(process.env.FLUENTD_HOST) || '127.0.0.1',
-  port: 24224,
+  port: Number(process.env.FLUENTD_PORT || 24224),
   timeout: 5.0,
   reconnectInterval: 1000 * 60 * 5, // 5 minutes
 });
-
-const apiPort = Number(process.env.API_PORT || 40000);
 
 const pqPool = new Pool({
   user: String(process.env.POSTGRES_USER || 'postgres'),
@@ -68,7 +66,7 @@ app.get('/api/v1/users', async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'not_found' });
     }
 
-    return res.status(200).json({ status: 'success', data });
+    return res.status(200).json({ status: 'ok', data });
   } catch (exception1) {
     fluentLogger('route error', { identifier: 'users', params: {}, error: exception1 });
     return res.status(500).json({ status: 'error', message: 'internal_error' });
@@ -101,7 +99,7 @@ app.get('/api/v1/users/:id', async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'not_found' });
     }
 
-    return res.status(200).json({ status: 'success', data });
+    return res.status(200).json({ status: 'ok', data });
   } catch (exception1) {
     fluentLogger('route error', { identifier: 'users', params: { id }, error: exception1 });
     return res.status(500).json({ status: 'error', message: 'internal_error' });
@@ -120,8 +118,14 @@ app.get('/api/v1/healthcheck', async (req, res) => {
     return res.status(500).json({ status: 'error', message: 'internal_error' });
   }
 
-  return res.status(200).json({ status: 'success' });
+  return res.status(200).json({ status: 'ok' });
+});
+
+app.get('/api/v1/version', async (req, res) => {
+  fluentLogger('route', { identifier: 'version', params: {} });
+
+  return res.status(200).json({ status: 'ok', version: process.env.API_VERSION });
 });
 
 /* eslint-disable no-console */
-app.listen(apiPort, (): void => console.info(`Listening on port ${apiPort}`));
+app.listen(40000, (): void => console.info('Listening on port 40000'));

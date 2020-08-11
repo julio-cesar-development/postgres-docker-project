@@ -28,3 +28,13 @@ kubectl apply -f ./k8s/traefik-ingress-controller.yaml
 # see deployed objects
 kubectl get pod,deploy,statefulset,svc,ingress,configmap,secret -n blackdevs
 ```
+
+* Access
+
+```bash
+# healthcheck
+curl http://localhost/api/v1/healthcheck
+
+# version
+curl http://localhost/api/v1/version
+```

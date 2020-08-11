@@ -5,3 +5,10 @@ data/*
 *.key
 key*
 dist/
+*.tfstate*
+.terraform
+*.tfvars
+*kubeconfig.yaml
+*.txt
+*.tfplan
+certs/

@@ -2,32 +2,24 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-deployment
-  namespace: blackdevs
+  namespace: default
 
 spec:
   replicas: 1
-  revisionHistoryLimit: 100
 
   selector:
     matchLabels:
       app: pg-project-api
 
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 3
-
   template:
     metadata:
-      name: api-deployment
       labels:
         app: pg-project-api
 
     spec:
       containers:
-        - name: pg-api
-          image: juliocesarmidia/pg-project-api:9d6b9ed
+        - name: api
+          image: juliocesarmidia/pg-project-api:latest
           imagePullPolicy: IfNotPresent
           command:
             - "sh"
@@ -52,24 +44,22 @@ spec:
                   key: POSTGRES_PASSWORD
 
             - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: env-secrets
-                  key: POSTGRES_DB
+              value: "postgres_db"
 
             - name: POSTGRES_HOST
-              value: pg-svc.blackdevs
+              value: postgres
 
             - name: POSTGRES_PORT
               value: "5432"
 
             - name: FLUENTD_HOST
-              value: fluentd-svc.blackdevs
+              value: fluentd
 
-            - name: HOST_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+            - name: FLUENTD_PORT
+              value: "24224"
+
+            - name: API_VERSION
+              value: "development"
 
           livenessProbe:
             httpGet:
@@ -78,12 +68,12 @@ spec:
             initialDelaySeconds: 10
             timeoutSeconds: 30
 
-          readinessProbe:
-            httpGet:
-              path: /api/v1/healthcheck
-              port: api-port
-            initialDelaySeconds: 10
-            timeoutSeconds: 30
+          # readinessProbe:
+          #   httpGet:
+          #     path: /api/v1/healthcheck
+          #     port: api-port
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 30
 
           resources:
             requests:
@@ -100,8 +90,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api-svc
-  namespace: blackdevs
+  name: api
+  namespace: default
 
 spec:
   type: ClusterIP
@@ -120,14 +110,12 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: api-ingress
-  namespace: blackdevs
+  namespace: default
 
   annotations:
     kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/rewrite-target: /
     traefik.ingress.kubernetes.io/load-balancer-method: "wrr"
-    # drr Deficit Round Robin
-    # wrr Weighted round robin
 
 spec:
   rules:
@@ -135,5 +123,5 @@ spec:
       paths:
         - path: /
           backend:
-            serviceName: api-svc
+            serviceName: api
             servicePort: 80

@@ -41,6 +41,9 @@ postgres:
     limits:
       memory: "128Mi"
       cpu: "256m"
+  secrets:
+    postgresUser: "invalid"
+    postgresPassword: "invalid"
 
 fluentd:
   replicaCount: 1

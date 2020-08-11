@@ -7,8 +7,8 @@ x-env:
   POSTGRES_DB: ${POSTGRES_DB:-postgres_db}
 
 services:
-  pg-db:
-    container_name: pg-db
+  postgres:
+    container_name: postgres
     restart: on-failure
     image: postgres:9.6-alpine
     environment:
@@ -21,45 +21,39 @@ services:
     networks:
       pg_project_network:
         ipv4_address: 172.100.10.2
-        aliases:
-          - pg-svc
-          - pg-svc.blackdevs.svc.cluster.local
-    domainname: blackdevs.svc.cluster.local
-    hostname: pg-svc
+    domainname: cluster.local
+    hostname: postgres
 
-  pg-api:
-    container_name: pg-api
+  api:
+    container_name: api
     restart: on-failure
     build:
-      context: ./pg-api
+      context: ./api
       dockerfile: Dockerfile
-      args:
-        - API_PORT=40000
     entrypoint: ["/app/docker-entrypoint.sh"]
     command: "sh -c 'yarn install && yarn build && yarn run dev'"
     environment:
       <<: *default-env
-      POSTGRES_HOST: ${POSTGRES_HOST:-pg-db}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      FLUENTD_HOST: ${FLUENTD_HOST:-fluentd-logger}
+      FLUENTD_HOST: ${FLUENTD_HOST:-fluentd}
+      FLUENTD_PORT: ${FLUENTD_PORT:-24224}
+      API_VERSION: ${API_VERSION:-development}
     ports:
       - "41000:40000"
     volumes:
-      - ./pg-api:/app:rw
+      - ./api:/app:rw
       - /app/node_modules
     depends_on:
-      - pg-db
+      - postgres
     networks:
       pg_project_network:
         ipv4_address: 172.100.10.3
-        aliases:
-          - api-svc
-          - api-svc.blackdevs.svc.cluster.local
-    domainname: blackdevs.svc.cluster.local
-    hostname: api-svc
+    domainname: cluster.local
+    hostname: api
 
-  fluentd-logger:
-    container_name: fluentd-logger
+  fluentd:
+    container_name: fluentd
     restart: on-failure
     image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
     ports:
@@ -69,11 +63,8 @@ services:
     networks:
       pg_project_network:
         ipv4_address: 172.100.10.4
-        aliases:
-          - fluentd-svc
-          - fluentd-svc.blackdevs.svc.cluster.local
-    domainname: blackdevs.svc.cluster.local
-    hostname: fluentd-svc
+    domainname: cluster.local
+    hostname: fluentd
 
 networks:
   pg_project_network:
